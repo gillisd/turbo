@@ -568,6 +568,18 @@ test("before-cache event", async ({ page }) => {
   assert.equal(await page.textContent("body"), "Modified")
 })
 
+test("cannot modify cache after before-render event", async ({ page }) => {
+  await page.evaluate(() => {
+    addEventListener("turbo:before-render", () => (document.body.innerHTML = "Modified"), { once: true })
+  })
+  await page.click("#same-origin-link")
+  await nextEventNamed(page, "turbo:load")
+  await page.goBack()
+  await nextEventNamed(page, "turbo:load")
+
+  assert.notEqual(await page.textContent("body"), "Modified")
+})
+
 test("mutation record-cache notification", async ({ page }) => {
   await modifyBodyAfterRemoval(page)
   await page.click("#same-origin-link")
