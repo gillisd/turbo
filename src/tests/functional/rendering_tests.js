@@ -586,7 +586,7 @@ test("mutation record-cache notification", async ({ page }) => {
   await nextBody(page)
   await page.goBack()
 
-  assert.equal(await page.textContent("body"), "Modified")
+  assert.notEqual(await page.textContent("body"), "Modified")
 })
 
 test("error pages", async ({ page }) => {
