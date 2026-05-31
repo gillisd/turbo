@@ -590,6 +590,18 @@ test("rendering a redirect response replaces the body once and only once", async
   assert.ok(await noNextBodyMutation(page), "replaces <body> element once")
 })
 
+test("cannot modify cache after before-render event", async ({ page }) => {
+  await page.evaluate(() => {
+    addEventListener("turbo:before-render", () => (document.body.innerHTML = "Modified"), { once: true })
+  })
+  await page.click("#same-origin-link")
+  await nextEventNamed(page, "turbo:load")
+  await page.goBack()
+  await nextEventNamed(page, "turbo:load")
+
+  assert.notEqual(await page.textContent("body"), "Modified")
+})
+
 function deepElementsEqual(page, left, right) {
   return page.evaluate(
     ([left, right]) => left.length == right.length && left.every((element) => right.includes(element)),
